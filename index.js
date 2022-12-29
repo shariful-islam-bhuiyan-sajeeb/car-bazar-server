@@ -1,6 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 const { MongoClient, ServerApiVersion } = require('mongodb');
+const { ObjectID, ObjectId } = require('bson');
 require('dotenv').config();
 const port =process.env.PORT || 5000;
 
@@ -40,6 +41,28 @@ async function run (){
             const update = req.body;
             const result = await aboutUpdateCollection.insertOne(update);
             res.send(result);
+        })
+
+        app.put('/loveReact', async(req,res) =>{
+            const {id} = req.query;
+            const body = req.body;
+            console.log(body);
+            const query = {_id:ObjectId(id)}
+            const option = {upsert: true}
+            const update = {
+                $set: {
+                    loveReaction: body.love +1,
+                }
+            }
+            console.log(update);
+            const result= await carBazarCollection.updateOne(query,update,option)
+            console.log(result);
+            res.send(result)
+        })
+
+        app.get('/popular', async (req, res) =>{
+            const popularCard = await carBazarCollection.find({}).limit(3).sort({loveReaction: -1}).toArray()
+            res.send(popularCard)
         })
 
     }
